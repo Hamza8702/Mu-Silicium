@@ -1,42 +1,41 @@
 name: Build UEFI for Lime
-
 on:
+  push:
+    branches: ["main"]
+    paths:
+      - 'Binaries'
+      - 'Common/**'
+      - 'Features/**'
+      - 'Mu_Basecore'
+      - 'MuPatches/**'
+      - 'Platforms/**'
+      - 'Silicon/**'
+      - 'Silicium-ACPI'
   workflow_dispatch:
-
+  pull_request:
+    types: [opened, reopened]
+    paths:
+      - 'Binaries'
+      - 'Common/**'
+      - 'Features/**'
+      - 'Mu_Basecore'
+      - 'MuPatches/**'
+      - 'Platforms/**'
+      - 'Silicon/**'
+      - 'Silicium-ACPI'
+env:
+  CI_BUILD: true
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
+      - uses: actions/checkout@v4
+      - name: Build UEFI for lime device
+        run: bash ./setup_env.sh -p apt && bash ./build_uefi.sh -d lime
 
-      - name: Install Dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y build-essential uuid-dev iasl git nasm gcc-aarch64-linux-gnu abootimg python3-distutils python3-pip clang-12 llvm-12
-          python3 -m pip install --upgrade pip
-          python3 -m pip install edk2-pytool-extensions edk2-pytool-library antlr4-python3-runtime --break-system-packages
-
-      - name: Build UEFI for Lime
-        run: |
-          # Define Clang paths
-          export CLANG38_BIN=/usr/lib/llvm-12/bin/
-          export CLANG38_AARCH64_PREFIX=aarch64-linux-gnu-
-          export EDK2_THREADS=$(nproc)
-          
-          # Execute build script
-          bash build_uefi.sh -d lime
-
-      - name: Upload Artifact
-        if: always()
+      - name: Upload UEFI images
         uses: actions/upload-artifact@v4
         with:
-          name: Lime-UEFI-Output
-          path: |
-            workspace/Build/Xiaomi/limePkg/**/FV/*.fd
-            *.img
-            *.bin
-
+          name: uefi-images
+          path: ./Mu-*
+          compression-level: 9
