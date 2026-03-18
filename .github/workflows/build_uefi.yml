@@ -1,0 +1,36 @@
+name: Build UEFI for Lime
+
+on:
+  workflow_dispatch: # Manuel tetikleme butonu
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential uuid-dev iasl git nasm gcc-aarch64-linux-gnu abootimg python3-pip clang llvm
+          pip3 install --upgrade pip
+          if [ -f pip-requirements.txt ]; then
+            pip3 install -r pip-requirements.txt --break-system-packages
+          fi
+
+      - name: Build UEFI for Lime
+        run: |
+          export EDK2_THREADS=$(nproc)
+          bash build_uefi.sh -d lime
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lime-UEFI-Output
+          path: |
+            workspace/Build/Xiaomi/limePkg/DEBUG_CLANG38/FV/*.fd
+            workspace/Build/Xiaomi/limePkg/RELEASE_CLANG38/FV/*.fd
+            *.img
