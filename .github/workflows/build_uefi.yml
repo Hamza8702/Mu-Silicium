@@ -1,41 +1,16 @@
-name: Build UEFI for Lime
-on:
-  push:
-    branches: ["main"]
-    paths:
-      - 'Binaries'
-      - 'Common/**'
-      - 'Features/**'
-      - 'Mu_Basecore'
-      - 'MuPatches/**'
-      - 'Platforms/**'
-      - 'Silicon/**'
-      - 'Silicium-ACPI'
-  workflow_dispatch:
-  pull_request:
-    types: [opened, reopened]
-    paths:
-      - 'Binaries'
-      - 'Common/**'
-      - 'Features/**'
-      - 'Mu_Basecore'
-      - 'MuPatches/**'
-      - 'Platforms/**'
-      - 'Silicon/**'
-      - 'Silicium-ACPI'
-env:
-  CI_BUILD: true
-jobs:
-  build:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
       - name: Build UEFI for lime device
-        run: bash ./setup_env.sh -p apt && bash ./build_uefi.sh -d lime
-
-      - name: Upload UEFI images
-        uses: actions/upload-artifact@v4
-        with:
-          name: uefi-images
-          path: ./Mu-*
-          compression-level: 9
+        run: |
+          # Step 1: Force initialize and update all git submodules recursively
+          # This prevents "File Not Found" errors during the ACPI and Openssl stages.
+          git submodule update --init --recursive
+          
+          # Step 2: Set up the build environment using the apt provider
+          # This installs all necessary compilers (GCC/Clang) and build tools.
+          bash ./setup_env.sh -p apt
+          
+          # Step 3: Execute the UEFI build process for the Xiaomi 'lime' platform
+          # This triggers the Stuart (Project Mu) build engine.
+          bash ./build_uefi.sh -d lime
+        env:
+          # Ensure the environment knows it's a CI build to avoid interactive prompts
+          CI_BUILD: true
