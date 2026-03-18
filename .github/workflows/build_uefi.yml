@@ -1,7 +1,7 @@
 name: Build UEFI for Lime
 
 on:
-  workflow_dispatch: # Manuel tetikleme butonu
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,27 +11,32 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+          fetch-depth: 0
 
-            - name: Install Dependencies
+      - name: Install Dependencies
         run: |
           sudo apt update
           sudo apt install -y build-essential uuid-dev iasl git nasm gcc-aarch64-linux-gnu abootimg python3-distutils python3-pip clang-12 llvm-12
           python3 -m pip install --upgrade pip
-          # We removed the problematic 'mono-cache' and added essential EDK2 tools
           python3 -m pip install edk2-pytool-extensions edk2-pytool-library antlr4-python3-runtime --break-system-packages
-
-          fi
 
       - name: Build UEFI for Lime
         run: |
+          # Define Clang paths
+          export CLANG38_BIN=/usr/lib/llvm-12/bin/
+          export CLANG38_AARCH64_PREFIX=aarch64-linux-gnu-
           export EDK2_THREADS=$(nproc)
+          
+          # Execute build script
           bash build_uefi.sh -d lime
 
       - name: Upload Artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Lime-UEFI-Output
           path: |
-            workspace/Build/Xiaomi/limePkg/DEBUG_CLANG38/FV/*.fd
-            workspace/Build/Xiaomi/limePkg/RELEASE_CLANG38/FV/*.fd
+            workspace/Build/Xiaomi/limePkg/**/FV/*.fd
             *.img
+            *.bin
+
