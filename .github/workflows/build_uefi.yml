@@ -12,13 +12,14 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install System Dependencies
+            - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential uuid-dev iasl git nasm gcc-aarch64-linux-gnu abootimg python3-pip clang llvm
-          pip3 install --upgrade pip
-          if [ -f pip-requirements.txt ]; then
-            pip3 install -r pip-requirements.txt --break-system-packages
+          sudo apt install -y build-essential uuid-dev iasl git nasm gcc-aarch64-linux-gnu abootimg python3-distutils python3-pip clang-12 llvm-12
+          python3 -m pip install --upgrade pip
+          # We removed the problematic 'mono-cache' and added essential EDK2 tools
+          python3 -m pip install edk2-pytool-extensions edk2-pytool-library antlr4-python3-runtime --break-system-packages
+
           fi
 
       - name: Build UEFI for Lime
