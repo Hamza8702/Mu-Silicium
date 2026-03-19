@@ -30,9 +30,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Build UEFI for active devices
-        run: bash ./setup_env.sh -p apt && bash ./build_active_devices.sh -r DEBUG -i
-
+      - name: Build UEFI for vayu devices
+        run: bash ./setup_env.sh -p apt && bash ./build_uefi.sh -d vayu 
       - name: Upload UEFI images
         uses: actions/upload-artifact@v4
         with:
