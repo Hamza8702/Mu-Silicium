@@ -1,31 +1,5 @@
-name: Build UEFI for active devices
+name: Build UEFI for vayu devices
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - 'Binaries'
-      - 'Common/**'
-      - 'Features/**'
-      - 'Mu_Basecore'
-      - 'MuPatches/**'
-      - 'Platforms/**'
-      - 'Silicon/**'
-      - 'Silicium-ACPI'
-  workflow_dispatch:
-  pull_request:
-    types: [opened, reopened]
-    paths:
-      - 'Binaries'
-      - 'Common/**'
-      - 'Features/**'
-      - 'Mu_Basecore'
-      - 'MuPatches/**'
-      - 'Platforms/**'
-      - 'Silicon/**'
-      - 'Silicium-ACPI'
-env:
-  CI_BUILD: true
-jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
