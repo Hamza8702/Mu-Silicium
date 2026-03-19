@@ -1,10 +1,10 @@
-name: Build UEFI for vayu devices
+name: Build UEFI for lime devices
 on:
   build:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Build UEFI for vayu devices
+      - name: Build UEFI for lime devices
         run: bash ./setup_env.sh -p apt && bash ./build_uefi.sh -d vayu 
       - name: Upload UEFI images
         uses: actions/upload-artifact@v4
