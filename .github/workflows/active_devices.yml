@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build UEFI for miatoll devices
-        run: bash ./setup_env.sh -p apt && bash ./build_uefi.sh -d miatoll -m 0 -D EL2_ENABLE=1
+        run: bash ./setup_env.sh -p apt && bash ./build_uefi.sh -d miatoll -m 0
 
       - name: Upload UEFI images
         uses: actions/upload-artifact@v4
