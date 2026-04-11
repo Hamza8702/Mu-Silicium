@@ -29,6 +29,11 @@
   # DDR Start Address
   gArmTokenSpaceGuid.PcdSystemMemoryBase|0x80000000
 
+  # ARM Platform Settings (EL2 Enable)
+  gArmTokenSpaceGuid.PcdArmProcessorWakeUpGicRegistersBase|0x00000000
+  gArmPlatformTokenSpaceGuid.PcdArmPlatformIsSecure|FALSE
+  gArmTokenSpaceGuid.PcdPrePiEnableVHE|TRUE
+
   # UEFI Stack Addresses
   gEmbeddedTokenSpaceGuid.PcdPrePiStackBase|0x9FF90000
   gEmbeddedTokenSpaceGuid.PcdPrePiStackSize|0x00040000
