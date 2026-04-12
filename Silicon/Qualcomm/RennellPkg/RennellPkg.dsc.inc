@@ -63,6 +63,7 @@
   # Virtualization Support
   gArmTokenSpaceGuid.PcdArmArchTimerHypIntrNum|26
   gArmTokenSpaceGuid.PcdArmArchTimerVirtIntrNum|27
+  gArmTokenSpaceGuid.PcdEnableVHE|TRUE
 
 [LibraryClasses]
   PlatformPrePiLib|RennellPkg/Library/PlatformPrePiLib/PlatformPrePiLib.inf
