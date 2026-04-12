@@ -1,5 +1,6 @@
 //
 //  Copyright (c) 2011 - 2020, Arm Limited. All rights reserved.
+//  Modified for EL2/VHE Support by Hamza
 //
 //  SPDX-License-Identifier: BSD-2-Clause-Patent
 //
@@ -7,6 +8,7 @@
 #include <AsmMacroLib.h>
 
 .set CTRL_SPAN_BIT, (1 << 23)
+.set HCR_EL2_E2H,   (1 << 34)  /* Virtualization Host Extensions Bit */
 
 .text
 .align 3
@@ -38,6 +40,34 @@ SetSVCMode:
   // Invalidate TLB
   bl   ASM_PFX (ArmInvalidateTlb)
 
+  /* --- EL2 / VHE CHECK START --- */
+  mrs  x0, CurrentEL
+  lsr  x0, x0, #2
+  cmp  x0, #2
+  b.ne SetupEL1
+
+#if (FixedPcdGet32 (PcdEnableVHE) == 1)
+EnableVHE:
+  // Enable VHE Mode in HCR_EL2
+  mrs  x0, hcr_el2
+  orr  x0, x0, #HCR_EL2_E2H
+  msr  hcr_el2, x0
+  isb
+
+  // Rewrite SCTLR_EL2 (Instead of EL1)
+  mrs  x0, sctlr_el2
+  orr  x0, x0, #CTRL_SPAN_BIT
+  msr  sctlr_el2, x0
+
+  // Untrap VFP/SIMD at EL2
+  mrs  x0, cptr_el2
+  bic  x0, x0, #(1 << 20) // Clear TFP bit
+  msr  cptr_el2, x0
+  isb
+  b    SetupCoreStack
+#endif
+
+SetupEL1:
   // Rewrite SCTLR_EL1
   mrs  x0, sctlr_el1
   orr  x0, x0, #CTRL_SPAN_BIT
@@ -104,3 +134,4 @@ JumpToC:
 
 NeverReturn:
   b  NeverReturn
+
