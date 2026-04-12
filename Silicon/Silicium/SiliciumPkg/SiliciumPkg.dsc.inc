@@ -31,7 +31,7 @@
   #
   # Vendor Stuff
   #
-  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"3.3"
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"3.4"
   gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVendor|L"Project Silicium"
 
   #
@@ -206,7 +206,6 @@
   MuTelemetryHelperLib|MsWheaPkg/Library/MuTelemetryHelperLib/MuTelemetryHelperLib.inf
   CapsuleLib|MdeModulePkg/Library/DxeCapsuleLibNull/DxeCapsuleLibNull.inf
   ResetUtilityLib|MdeModulePkg/Library/ResetUtilityLib/ResetUtilityLib.inf
-  FltUsedLib|MdePkg/Library/FltUsedLib/FltUsedLib.inf
   PcdDatabaseLoaderLib|MdeModulePkg/Library/PcdDatabaseLoaderLib/Dxe/PcdDatabaseLoaderLibDxe.inf
   ExtractGuidedSectionLib|EmbeddedPkg/Library/PrePiExtractGuidedSectionLib/PrePiExtractGuidedSectionLib.inf
   DmaLib|EmbeddedPkg/Library/CoherentDmaLib/CoherentDmaLib.inf
@@ -261,6 +260,7 @@
   #
   OpensslLib|OpensslPkg/Library/OpensslLib/OpensslLib.inf
   IntrinsicLib|OpensslPkg/Library/IntrinsicLib/IntrinsicLib.inf
+  FltUsedLib|MsCorePkg/Library/FltUsedLib/FltUsedLib.inf
 
   #
   # RNG Libraries
