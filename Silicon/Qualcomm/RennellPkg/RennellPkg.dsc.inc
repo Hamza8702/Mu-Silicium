@@ -23,8 +23,8 @@
   HAS_PSCI_MEMPROTECT_FAILING_ERRATA         = 1
 
 [BuildOptions]
-  *_*_AARCH64_CC_FLAGS = -march=armv8.2-a+crypto+rcpc -ENABLE_VHE=1
-  *_*_AARCH64_PP_FLAGS = -ENABLE_VHE=1
+  *_*_AARCH64_CC_FLAGS = -march=armv8.2-a+crypto+rcpc -DENABLE_VHE=1
+  *_*_AARCH64_PP_FLAGS = -DENABLE_VHE=1
 
 [PcdsFixedAtBuild]
   # Platform Pei HOBs
