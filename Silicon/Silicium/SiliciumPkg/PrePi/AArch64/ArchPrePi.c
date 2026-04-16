@@ -7,9 +7,10 @@
 #include <Library/ArmLib.h>
 #include <Library/BaseLib.h>
 
-/* Register Definitions for AArch64 */
-#define HCR_EL2_E2H (1ULL << 34) // Virtualization Host Extensions Enable
-#define ARM_HCR_TGE (1ULL << 27) // Trap General Exceptions
+/* Use existing macro if not defined */
+#ifndef HCR_EL2_E2H
+#define HCR_EL2_E2H (1ULL << 34)
+#endif
 
 VOID
 ArchInitialize ()
@@ -32,24 +33,22 @@ ArchInitialize ()
        - Clear TGE: Allow the host kernel to receive its own interrupts.
     */
     HcrVal |= HCR_EL2_E2H;    // Enable VHE
-    HcrVal &= ~ARM_HCR_TGE;   // Disable TGE
+    HcrVal &= ~ARM_HCR_TGE;   // Disable TGE (Already defined in AArch64.h)
 
     // Write back to HCR_EL2
     asm volatile("msr hcr_el2, %0" : : "r" (HcrVal));
 
     // 3. System Timer Access Configuration
     // Allow EL1 and Guest OS to access the physical counter and timer
-    // CNTHCTL_EL2_EL1PCTEN (Bit 0) | CNTHCTL_EL2_EL1PCEN (Bit 1)
     ArmWriteCntHctl (0x3);
 
     // 4. CPTR_EL2: Disable Floating Point and SIMD Traps
-    // Using inline assembly to bypass missing library functions
     // 0x33FF: Disables all traps for FP, SIMD, and SVE
     asm volatile("msr cptr_el2, %0" : : "r" ((UINT64)0x33FF));
 
     // 5. Instruction Synchronization Barrier
-    // Ensure all register changes take effect immediately
     ArmInstructionSynchronizationBarrier();
   }
 }
+
 
