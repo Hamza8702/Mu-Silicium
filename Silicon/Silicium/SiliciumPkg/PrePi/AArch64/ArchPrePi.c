@@ -24,8 +24,9 @@ ArchInitialize ()
     asm volatile("msr cntvoff_el2, xzr");
 
     // 4. GICv3 System Register Access (ICC_SRE_EL2)
-    // Required for Hypervisor to manage interrupts
-    UINT32 SreVal;
+    // Using UINT64 to match AArch64 register width and avoid compiler errors
+    UINT64 SreVal;
+    
     // S3_4_C12_C9_5 is the system register encoding for ICC_SRE_EL2
     asm volatile("mrs %0, s3_4_c12_c9_5" : "=r" (SreVal));
     SreVal |= 0x7; // Enable SRE, DFB, and ASRE bits
