@@ -1,6 +1,6 @@
 /**
   Copyright (c) 2011-2017, ARM Limited. All rights reserved.
-  Modified for EL2 Support by Hamza - Stable Version
+  Modified for EL2/KVM Support by Hamza - Stable English Version
   SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
@@ -10,42 +10,38 @@
 VOID
 ArchInitialize ()
 {
-  // 1. Enable Floating Point Unit (VFP)
+  // 1. Enable Floating Point Unit
   ArmEnableVFP ();
 
-  // 2. Check current Exception Level
+  // 2. Identify current execution level
   UINTN CurrentEL = ArmReadCurrentEL ();
 
-  // Apply EL2 configurations only if we are in EL2
+  // Process EL2 specific configurations for KVM
   if (CurrentEL == AARCH64_EL2) {
+    
+    // 3. Reset Virtual Timer Offset
+    // Essential for preventing KVM/Kernel stall during boot
+    asm volatile("msr cntvoff_el2, xzr");
+
+    // 4. GICv3 System Register Access (ICC_SRE_EL2)
+    // Required for Hypervisor to manage interrupts
+    UINT32 SreVal;
+    // S3_4_C12_C9_5 is the system register encoding for ICC_SRE_EL2
+    asm volatile("mrs %0, s3_4_c12_c9_5" : "=r" (SreVal));
+    SreVal |= 0x7; // Enable SRE, DFB, and ASRE bits
+    asm volatile("msr s3_4_c12_c9_5, %0" : : "r" (SreVal));
+
+    // 5. Finalize HCR_EL2
+    // Ensure TGE (Trap General Exceptions) is clear for EL1 guest/host kernel
     UINT64 HcrVal;
-
-    // Read Hypervisor Configuration Register (EL2)
     asm volatile("mrs %0, hcr_el2" : "=r" (HcrVal));
-
-    /* Configuration:
-       - Clear TGE: Ensure the host kernel can receive interrupts.
-       - Note: E2H (VHE) is omitted here to prevent early memory map conflicts
-         during the UEFI boot phase. Let the Linux kernel handle VHE transition.
-    */
-    HcrVal &= ~ARM_HCR_TGE; 
-
-    // Write back to HCR_EL2
+    HcrVal &= ~(1ULL << 27); // Clear ARM_HCR_TGE
     asm volatile("msr hcr_el2, %0" : : "r" (HcrVal));
 
-    // 3. System Timer Access Configuration
-    // Allow EL1 and Guest OS to access physical counter and timer
-    ArmWriteCntHctl (0x3);
-
-    /* 4. CPTR_EL2: Disable Floating Point and SIMD Traps.
-       Using 'xzr' (zero register) is the safest method to clear all traps 
-       without hitting reserved bits that trigger "System Destroyed" errors.
-    */
-    asm volatile("msr cptr_el2, xzr");
-
-    // 5. Instruction Synchronization Barrier to apply changes immediately
+    // Ensure all system register writes are completed
     ArmInstructionSynchronizationBarrier();
   }
 }
+
 
 
