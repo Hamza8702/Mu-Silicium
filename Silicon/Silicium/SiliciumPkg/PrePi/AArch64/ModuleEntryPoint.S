@@ -1,85 +1,84 @@
 //  Copyright (c) 2011 - 2020, Arm Limited. All rights reserved.
-//  Modified for EL2/KVM Support by Hamza - Stable English Version
+//  Modified for EL2/KVM Support by Hamza
+//  Target: Xiaomi Miatoll (Snapdragon 720G)
 //  SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include <AsmMacroLib.h>
 
-// Definitions for system registers
+// Register Bit Definitions
 .set CTRL_SPAN_BIT, (1 << 23)
-.set HCR_EL2_E2H,   (1 << 34)  /* Virtualization Host Extensions Bit */
-.set HCR_EL2_RW,    (1 << 31)  /* Execution state for EL1 is AArch64 */
+.set HCR_EL2_RW,    (1 << 31)  /* EL1 Execution state is AArch64 */
+.set CPTR_EL2_RES1, 0x33ff     /* Safe architectural default for CPTR_EL2 */
 
 .text
 .align 3
 
 ASM_FUNC (_ModuleEntryPoint)
-  // Standard SoC specific initialization
+  // 1. Low-level platform initialization
   bl   ASM_PFX (PlatformAssemblyInit)
 
-  // Read Multiprocessor Affinity Register
+  // 2. Save MPIDR and cleanup CPU state
   bl   ASM_PFX (ArmReadMpidr)
   mov  x10, x0
-
-  // Basic CPU state cleanup
   bl   ASM_PFX (ArmDisableInterrupts)
   bl   ASM_PFX (ArmDisableCachesAndMmu)
   bl   ASM_PFX (ArmInvalidateInstructionCache)
   bl   ASM_PFX (ArmInvalidateTlb)
 
-  // Check current Exception Level (EL)
+  // 3. Check current Exception Level (EL)
   mrs  x0, CurrentEL
   lsr  x0, x0, #2
   cmp  x0, #2
-  b.ne SetupEL1
+  b.eq EnableEL2Config // Already in EL2, proceed to config
+
+  // 4. EL1 to EL2 Transition Logic
+  // Note: Your custom EL1->EL2 switch code should be executed here.
+  // We ensure EL2 registers are in a known state before switching.
+  ldr  x0, =0x30c50830 // Safe SCTLR_EL2 value (MMU off)
+  msr  sctlr_el2, x0
+  isb
 
 EnableEL2Config:
-  // Configure HCR_EL2: Set RW=1 for AArch64 EL1
+  // 5. Configure HCR_EL2: Set RW=1 for AArch64 EL1
   mrs  x0, hcr_el2
   orr  x0, x0, #HCR_EL2_RW
-#if (FixedPcdGet32 (PcdEnableVHE) == 1)
-  orr  x0, x0, #HCR_EL2_E2H
-#endif
   msr  hcr_el2, x0
   isb
 
-  // Initialize SCTLR_EL2 to a safe value (MMU disabled, I-Cache potentially enabled)
-  ldr  x0, =0x30c50830
-  msr  sctlr_el2, x0
-
-  // Untrap VFP/SIMD: Avoiding 'xzr' to prevent "System Destroyed" on Qualcomm
-  mrs  x0, cptr_el2
-  bic  x0, x0, #(1 << 20) // Clear TFP bit (Trap Floating Point)
+  // 6. Setup Traps and Floating Point (CPTR_EL2)
+  // Using RES1 bits to satisfy Qualcomm's strict EL3/TrustZone checks
+  ldr  x0, =CPTR_EL2_RES1
   msr  cptr_el2, x0
+  isb
   b    SetupCoreStack
 
 SetupEL1:
+  // Fallback for EL1 (Should not be reached if transition is successful)
   mrs  x0, sctlr_el1
   orr  x0, x0, #CTRL_SPAN_BIT
   msr  sctlr_el1, x0
-
-  mrs  x0, cpacr_el1
-  orr  x0, x0, #0x300000
+  mov  x0, #0x300000
   msr  cpacr_el1, x0
 
 SetupCoreStack:
-  // Setup Stack Pointer for the current EL
+  // 7. Setup Stack Pointer for the current EL
   ldr  x0, =FixedPcdGet32 (PcdPrePiStackBase)
   ldr  x1, =FixedPcdGet32 (PcdPrePiStackSize)
   add  x2, x0, x1
   mov  sp, x2
+  isb
 
-  // Clear the stack area
+  // 8. Zero-initialize stack
   mov  x3, x0
 ClearStackLoop:
   stp  xzr, xzr, [x3], #16
   cmp  x3, x2
   b.lt ClearStackLoop
 
-EnableCaches:
+JumpToC:
+  // 9. Enable caches and jump to CEntryPoint
   bl   ASM_PFX (ArmEnableInstructionCache)
   bl   ASM_PFX (ArmEnableDataCache)
-
-JumpToC:
   mov  x0, x10
   ldr  x4, =ASM_PFX (CEntryPoint)
   mov  x29, xzr
@@ -87,5 +86,6 @@ JumpToC:
 
 NeverReturn:
   b  NeverReturn
+
 
 
