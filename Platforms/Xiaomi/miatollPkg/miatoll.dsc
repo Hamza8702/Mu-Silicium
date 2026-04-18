@@ -1,3 +1,4 @@
+
 ##
 #  Copyright (c) 2011 - 2022, ARM Limited. All rights reserved.
 #  Copyright (c) 2014, Linaro Limited. All rights reserved.
@@ -10,7 +11,7 @@
 
 ################################################################################
 #
-# Defines Section - statements that will be processed to create a Makefile.
+# Defines Section
 #
 ################################################################################
 [Defines]
@@ -33,12 +34,23 @@
   gEmbeddedTokenSpaceGuid.PcdPrePiStackBase|0x9FF90000
   gEmbeddedTokenSpaceGuid.PcdPrePiStackSize|0x00040000
 
+  # Virtualization & EL2 Configuration
+  # This ensures the CPU is prepared for KVM handoff
+  gArmTokenSpaceGuid.PcdArmPrimaryCoreStackMax|0x10000
+  gArmTokenSpaceGuid.PcdArmSecondaryCoreStackMax|0x1000
+  
+  # Timer Frequency for Snapdragon 720G (19.2 MHz)
+  gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz|19200000
+  gArmTokenSpaceGuid.PcdArmArchTimerSecIntrNum|13
+  gArmTokenSpaceGuid.PcdArmArchTimerHypIntrNum|10
+  gArmTokenSpaceGuid.PcdArmArchTimerVirtIntrNum|11
 
   # Device GUID
   gSiliciumPkgTokenSpaceGuid.PcdDeviceGuid|{ 0x18, 0xEB, 0xFF, 0x3B, 0x48, 0x39, 0x22, 0x40, 0x88, 0x8F, 0x60, 0x85, 0x30, 0xC6, 0x1C, 0xDD }
 
-  # SmBios
+  # SmBios Configuration
   gSiliciumPkgTokenSpaceGuid.PcdSmbiosSystemManufacturer|"Xiaomi"
+
 !if $(DEVICE_MODEL) == 0
   gSiliciumPkgTokenSpaceGuid.PcdSmbiosSystemModel|"Redmi Note 9S"
   gSiliciumPkgTokenSpaceGuid.PcdSmbiosSystemRetailModel|"curtana"
@@ -70,7 +82,7 @@
   gSiliciumPkgTokenSpaceGuid.PcdSmbiosSystemRetailSku|"M2003J6CI"
   gSiliciumPkgTokenSpaceGuid.PcdSmbiosBoardModel|"J6CI"
 !else
-!error "Invalid Model Type! 0, 1, 2, 3, 4 or 5 are Valid Model Types."
+!error "Invalid Model Type! 0-5 are Valid Model Types."
 !endif
 
   # Simple Frame Buffer
@@ -79,7 +91,7 @@
   gSiliciumPkgTokenSpaceGuid.PcdFrameBufferColorDepth|32
 
   # Platform Pei
-  gQcomPkgTokenSpaceGuid.PcdPlatformType|"WP"       # Actually its "LA".
+  gQcomPkgTokenSpaceGuid.PcdPlatformType|"WP"
   gQcomPkgTokenSpaceGuid.PcdScheduleInterfaceAddr|0x9FC36588
 
   # Dynamic RAM Start Address
@@ -92,5 +104,9 @@
   MemoryMapLib|miatollPkg/Library/MemoryMapLib/MemoryMapLib.inf
   ConfigurationMapLib|miatollPkg/Library/ConfigurationMapLib/ConfigurationMapLib.inf
   AcpiDeviceUpdateLib|SiliciumPkg/Library/AcpiDeviceUpdateLibNull/AcpiDeviceUpdateLibNull.inf
+
+[BuildOptions.common]
+  # Force EL2 and VHE Support during compilation
+  GCC:*_*_AARCH64_CC_FLAGS = -D ARM_CPU_ARMV8_CONFIG_EL2_NONSECURE=1 -D ARM_CPU_VHE=1
 
 !include RennellPkg/RennellPkg.dsc.inc
