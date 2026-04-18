@@ -36,8 +36,8 @@
 
   # Virtualization & EL2 Configuration
   # This ensures the CPU is prepared for KVM handoff
-  gArmTokenSpaceGuid.PcdArmPrimaryCoreStackMax|0x10000
-  gArmTokenSpaceGuid.PcdArmSecondaryCoreStackMax|0x1000
+  #gArmTokenSpaceGuid.PcdArmPrimaryCoreStackMax|0x10000
+  #gArmTokenSpaceGuid.PcdArmSecondaryCoreStackMax|0x1000
   
   # Timer Frequency for Snapdragon 720G (19.2 MHz)
   gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz|19200000
