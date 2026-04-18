@@ -18,31 +18,30 @@ ArchInitialize ()
 
   // 2. Perform EL2 configurations only if we are at the correct level
   if (ArmReadCurrentEL () == AARCH64_EL2) {
-    
+
     // 3. Reset Virtual Timer Offset (CNTVOFF_EL2)
     // Mandatory for KVM to prevent virtual time drifts.
     asm volatile("msr cntvoff_el2, xzr" ::: "memory");
 
     // 4. Configure GICv3 System Register Access (ICC_SRE_EL2)
-    // Using a safe bitmask to avoid TrustZone write-protection faults.
+    // We only set the SRE bit (Bit 0). Setting bits 1 and 2 (DFB/ASRE) 
+    // often causes resets on locked Qualcomm firmware.
     UINT64 SreVal;
     asm volatile("mrs %0, s3_4_c12_c9_5" : "=r" (SreVal));
     
-    // Set SRE (Bit 0) and DFB/ASRE if possible. 
-    // If "System Destroyed" persists, try changing 0x7 to 0x1.
-    SreVal |= 0x7; 
-    
-    asm volatile("isb" ::: "memory");
-    asm volatile("msr s3_4_c12_c9_5, %0" : : "r" (SreVal) : "memory");
+    if (!(SreVal & 0x1)) {
+        SreVal |= 0x1; // Only set Enable bit if not already set
+        asm volatile("msr s3_4_c12_c9_5, %0" : : "r" (SreVal) : "memory");
+        asm volatile("isb" ::: "memory");
+    }
 
     // 5. Configure Hypervisor Configuration (HCR_EL2)
     UINT64 HcrVal;
     asm volatile("mrs %0, hcr_el2" : "=r" (HcrVal));
-    
-    HcrVal |= (1ULL << 31);   // EL1 must be AArch64
-    HcrVal &= ~(1ULL << 27);  // Clear TGE to allow EL1 host interrupts
-    
-    asm volatile("isb" ::: "memory");
+
+    HcrVal |= (1ULL << 31);   // RW=1: EL1 must be AArch64
+    HcrVal &= ~(1ULL << 27);  // TGE=0: Standard EL1/EL0 execution
+
     asm volatile("msr hcr_el2, %0" : : "r" (HcrVal) : "memory");
     asm volatile("isb" ::: "memory");
 
@@ -50,7 +49,3 @@ ArchInitialize ()
     ArmInstructionSynchronizationBarrier();
   }
 }
-
-
-
-
