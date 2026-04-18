@@ -99,4 +99,3 @@
   GCC:*_*_AARCH64_CC_FLAGS = -D ARM_CPU_ARMV8_CONFIG_EL2_NONSECURE=1 -D ARM_CPU_VHE=1 -D PcdArmArchTimerFreqInHz=19200000
 
 !include RennellPkg/RennellPkg.dsc.inc
-
