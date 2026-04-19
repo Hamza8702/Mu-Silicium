@@ -23,8 +23,7 @@
   HAS_PSCI_MEMPROTECT_FAILING_ERRATA         = 1
 
 [BuildOptions]
-  *_*_AARCH64_CC_FLAGS = -march=armv8.2-a+crypto+rcpc -DENABLE_VHE=1
-  *_*_AARCH64_PP_FLAGS = -DENABLE_VHE=1
+  *_*_AARCH64_CC_FLAGS = -march=armv8.2-a+crypto+rcpc
 
 [PcdsFixedAtBuild]
   # Platform Pei HOBs
@@ -59,10 +58,6 @@
   # SmBios Memory Extras
   gSiliciumPkgTokenSpaceGuid.PcdSmbiosMemorySpeed|2100
   gSiliciumPkgTokenSpaceGuid.PcdSmbiosMemoryType|30
-  
-  # Virtualization Support
-  gArmTokenSpaceGuid.PcdArmArchTimerHypIntrNum|26
-  gArmTokenSpaceGuid.PcdArmArchTimerVirtIntrNum|27
 
 [LibraryClasses]
   PlatformPrePiLib|RennellPkg/Library/PlatformPrePiLib/PlatformPrePiLib.inf
