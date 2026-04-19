@@ -10,7 +10,7 @@
 
 ################################################################################
 #
-# Defines Section
+# Defines Section - statements that will be processed to create a Makefile.
 #
 ################################################################################
 [Defines]
@@ -27,7 +27,7 @@
 
 [PcdsFixedAtBuild]
   # DDR Start Address
-  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x81000000
+  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x80000000
 
   # UEFI Stack Addresses
   gEmbeddedTokenSpaceGuid.PcdPrePiStackBase|0x9FF90000
@@ -36,9 +36,8 @@
   # Device GUID
   gSiliciumPkgTokenSpaceGuid.PcdDeviceGuid|{ 0x18, 0xEB, 0xFF, 0x3B, 0x48, 0x39, 0x22, 0x40, 0x88, 0x8F, 0x60, 0x85, 0x30, 0xC6, 0x1C, 0xDD }
 
-  # SmBios Configuration
+  # SmBios
   gSiliciumPkgTokenSpaceGuid.PcdSmbiosSystemManufacturer|"Xiaomi"
-
 !if $(DEVICE_MODEL) == 0
   gSiliciumPkgTokenSpaceGuid.PcdSmbiosSystemModel|"Redmi Note 9S"
   gSiliciumPkgTokenSpaceGuid.PcdSmbiosSystemRetailModel|"curtana"
@@ -70,7 +69,7 @@
   gSiliciumPkgTokenSpaceGuid.PcdSmbiosSystemRetailSku|"M2003J6CI"
   gSiliciumPkgTokenSpaceGuid.PcdSmbiosBoardModel|"J6CI"
 !else
-!error "Invalid Model Type! 0-5 are Valid Model Types."
+!error "Invalid Model Type! 0, 1, 2, 3, 4 or 5 are Valid Model Types."
 !endif
 
   # Simple Frame Buffer
@@ -79,7 +78,7 @@
   gSiliciumPkgTokenSpaceGuid.PcdFrameBufferColorDepth|32
 
   # Platform Pei
-  gQcomPkgTokenSpaceGuid.PcdPlatformType|"WP"
+  gQcomPkgTokenSpaceGuid.PcdPlatformType|"WP"       # Actually its "LA".
   gQcomPkgTokenSpaceGuid.PcdScheduleInterfaceAddr|0x9FC36588
 
   # Dynamic RAM Start Address
@@ -92,10 +91,5 @@
   MemoryMapLib|miatollPkg/Library/MemoryMapLib/MemoryMapLib.inf
   ConfigurationMapLib|miatollPkg/Library/ConfigurationMapLib/ConfigurationMapLib.inf
   AcpiDeviceUpdateLib|SiliciumPkg/Library/AcpiDeviceUpdateLibNull/AcpiDeviceUpdateLibNull.inf
-
-[BuildOptions.common]
-  # Force EL2 and VHE Support directly in the build flags to bypass DEC errors
-  # Also defining the Arch Timer Frequency for Snapdragon 720G (19.2MHz)
-  GCC:*_*_AARCH64_CC_FLAGS = -D ARM_CPU_ARMV8_CONFIG_EL2_NONSECURE=1 -D ARM_CPU_VHE=1 -D PcdArmArchTimerFreqInHz=19200000
 
 !include RennellPkg/RennellPkg.dsc.inc
